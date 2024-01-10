@@ -16,8 +16,6 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.*;
 
 import org.apache.cordova.PluginResult;
@@ -54,10 +52,14 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     boolean ttsInitialized = false;
     TextToSpeech tts = null;
     Context context = null;
+    CordovaWebView webView = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
         context = cordova.getActivity().getApplicationContext();
+        webView = webView;
+
+        webView.loadUrl("javascript:console.log('we are initializing');");
         tts = new TextToSpeech(cordova.getActivity().getApplicationContext(), this);
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
@@ -86,6 +88,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
+        webView.loadUrl("javascript:console.log('hello');");
         if (action.equals("speak")) {
             speak(args, callbackContext);
         } else if (action.equals("stop")) {
