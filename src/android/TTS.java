@@ -53,11 +53,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     TextToSpeech tts = null;
     Context context = null;
     CordovaWebView webView = null;
-    CallbackContext callbackContext = null;
+    CallbackContext synthesisCallback = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
-        callbackContext = new CallbackContext("listener_callback", webView);
+        synthesisCallback = new CallbackContext("listener_callback", webView);
         context = cordova.getActivity().getApplicationContext();
 
         tts = new TextToSpeech(cordova.getActivity().getApplicationContext(), this);
