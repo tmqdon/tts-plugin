@@ -53,9 +53,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     TextToSpeech tts = null;
     Context context = null;
     CordovaWebView webView = null;
+    CallbackContext callbackContext = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
+        callbackContext = new CallbackContext("listener_callback", webView);
         context = cordova.getActivity().getApplicationContext();
 
         tts = new TextToSpeech(cordova.getActivity().getApplicationContext(), this);
@@ -72,6 +74,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 System.out.println("sampleRateInHz: " + sampleRateInHz);
                 System.out.println("audioFormat: "  + audioFormat);
                 System.out.println("channelCount: " + channelCount);
+
+                sendEventToCordova("onBeginSynthesisEvent", utteranceId, sampleRateInHz, audioFormat, channelCount);
+
             }
 
             @Override
@@ -316,5 +321,27 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
         final PluginResult result = new PluginResult(PluginResult.Status.OK, languages);
         callbackContext.sendPluginResult(result);
+    }
+
+    private void sendEventToCordova(String event, Object... data) {
+
+        System.out.println(data.toString());
+        if (synthesisCallback != null) {
+            try {
+                JSONObject eventData = new JSONObject();
+                eventData.put("event", event);
+
+                // Add additional data to the eventData
+                for (int i = 0; i < data.length; i += 2) {
+                    if (i + 1 < data.length) {
+                        eventData.put(data[i].toString(), data[i + 1]);
+                    }
+                }
+
+                synthesisCallback.success(eventData);
+            } catch (JSONException e) {
+                synthesisCallback.error("Failed to create JSON object");
+            }
+        }
     }
 }
