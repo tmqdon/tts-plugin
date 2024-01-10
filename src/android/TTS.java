@@ -83,10 +83,10 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             }
 
             @Override
-            public void onError (String utteranceId, int errorCode) {
-               if(errorCode != 0){
-                 System.out.println("Error encountered in id: " + utteranceId + ": errorCode: "  + errorCode);
-               }
+            public void onError (String utteranceId) {
+
+                 System.out.println("Error encountered in id: " + utteranceId );
+           
             }
 
             @Override
