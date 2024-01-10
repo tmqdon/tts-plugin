@@ -325,7 +325,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void sendEventToCordova(String event, Object... data) {
 
-        System.out.println(data.toString());
+  
         if (synthesisCallback != null) {
             try {
                 JSONObject eventData = new JSONObject();
@@ -337,6 +337,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                         eventData.put(data[i].toString(), data[i + 1]);
                     }
                 }
+
+                System.out.println("eventData: " + eventData.toString());
 
                 synthesisCallback.success(eventData);
             } catch (JSONException e) {
