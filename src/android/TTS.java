@@ -59,12 +59,20 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         context = cordova.getActivity().getApplicationContext();
         webView = webView;
 
-        webView.loadUrl("javascript:console.log('we are initializing');");
         tts = new TextToSpeech(cordova.getActivity().getApplicationContext(), this);
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
             public void onStart(String s) {
                 // do nothing
+                System.out.println("starting speech for Id: " , s);
+            }
+
+            @Override
+            public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount){
+                System.out.println("id: ", utteranceId);
+                System.out.println("sampleRateInHz: ", sampleRateInHz);
+                System.out.println("audioFormat: " , audioFormat);
+                System.out.println("channelCount: ", channelCount);
             }
 
             @Override
@@ -88,7 +96,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
-        webView.loadUrl("javascript:console.log('hello');");
+        
         if (action.equals("speak")) {
             speak(args, callbackContext);
         } else if (action.equals("stop")) {
