@@ -64,15 +64,15 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             @Override
             public void onStart(String s) {
                 // do nothing
-                System.out.println("starting speech for Id: " , s);
+                System.out.println("starting speech for Id: " + s);
             }
 
             @Override
             public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount){
-                System.out.println("id: ", utteranceId);
-                System.out.println("sampleRateInHz: ", sampleRateInHz);
-                System.out.println("audioFormat: " , audioFormat);
-                System.out.println("channelCount: ", channelCount);
+                System.out.println("id: " + utteranceId);
+                System.out.println("sampleRateInHz: " + sampleRateInHz);
+                System.out.println("audioFormat: "  + audioFormat);
+                System.out.println("channelCount: " + channelCount);
             }
 
             @Override
