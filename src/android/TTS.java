@@ -70,12 +70,12 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
             @Override
             public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount){
-                System.out.println("id: " + utteranceId);
-                System.out.println("sampleRateInHz: " + sampleRateInHz);
-                System.out.println("audioFormat: "  + audioFormat);
-                System.out.println("channelCount: " + channelCount);
+                // System.out.println("id: " + utteranceId);
+                // System.out.println("sampleRateInHz: " + sampleRateInHz);
+                // System.out.println("audioFormat: "  + audioFormat);
+                // System.out.println("channelCount: " + channelCount);
 
-                sendEventToCordova("onBeginSynthesisEvent", utteranceId, sampleRateInHz, audioFormat, channelCount);
+                sendEventToCordova("onBeginSynthesisEvent", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz, "audioFormat", audioFormat, "channelCount", channelCount);
 
             }
 
@@ -96,9 +96,12 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
             @Override
             public void onRangeStart(String utteranceId, int start, int end, int frame){
-                System.out.println("RANGE VALUES:\n" );
-                System.out.println("start: " + start);
-                System.out.println("end: "  + end);
+                // System.out.println("RANGE VALUES:\n" );
+                // System.out.println("start: " + start);
+                // System.out.println("end: "  + end);
+
+                 sendEventToCordova("onRangeStartEvent", "startIdx", start, "endIdx", end, "frame", frame);
+
             }
         });
     }
@@ -338,7 +341,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                     }
                 }
 
-                System.out.println("eventData: " + eventData.toString());
+                System.out.println("sending eventData: " + eventData.toString());
 
                 synthesisCallback.success(eventData);
             } catch (JSONException e) {
