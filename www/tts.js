@@ -60,12 +60,12 @@ exports.registerSynthesisCallback = () => {
 //     });
 // };
 
-exports.registerRangeStartCallback = (context) => {
-    console.log("context", context);
+exports.registerRangeStartCallback = (printFunc) => {
+    printFunc();
 
     cordova.exec(
-        function () {
-            console.log("hello");
+        function (data) {
+            printFunc(data);
         },
         null,
         "TTS",
