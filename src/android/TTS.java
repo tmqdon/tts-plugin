@@ -192,6 +192,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 System.out.println(stopReason);
            }
 
+            System.out.println(params.toString());
+
             if(tts != null){
             System.out.println("STOPPING UTTERANCE");
             tts.stop();
