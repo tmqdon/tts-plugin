@@ -54,16 +54,12 @@ exports.registerSynthesisCallback = () => {
     });
 };
 
-// exports.registerRangeStartCallback = () => {
-//     return new Promise((resolve, reject) => {
-//         cordova.exec(resolve, reject, "TTS", "registerRangeStartCallback", []);
-//     });
-// };
-
 exports.registerRangeStartCallback = (printFunc) => {
     cordova.exec(
         function (data) {
-            printFunc(data);
+            // printFunc(data);
+            const rangeStartEvent = new CustomEvent("onRangeStartCallback", { data });
+            document.dispatchEvent(rangeStartEvent);
         },
         null,
         "TTS",
