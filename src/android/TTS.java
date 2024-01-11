@@ -56,6 +56,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     CordovaWebView webView = null;
     CallbackContext synthesisCallback = null;
     CallbackContext rangeStartCallback = null;
+     CallbackContext synthesisDoneCallback = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
@@ -66,16 +67,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
             public void onStart(String s) {
-                // do nothing
+
                 System.out.println("starting speech for Id: " + s);
             }
 
             @Override
             public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount){
-                // System.out.println("id: " + utteranceId);
-                // System.out.println("sampleRateInHz: " + sampleRateInHz);
-                // System.out.println("audioFormat: "  + audioFormat);
-                // System.out.println("channelCount: " + channelCount);
+
 
                 sendEventToCordova("onBeginSynthesis", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz, "audioFormat", audioFormat, "channelCount", channelCount);
 
@@ -83,10 +81,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
             @Override
             public void onDone(String callbackId) {
-                System.out.println("done" + callbackId);
+                System.out.println("done " + callbackId);
                 if (!callbackId.equals("")) {
-                    CallbackContext context = new CallbackContext(callbackId, webView);
-                    context.success();
+                    // CallbackContext context = new CallbackContext(callbackId, webView);
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                    pluginResult.setKeepCallback(true);
+                    synthesisDoneCallback.sendPluginResult(pluginResult);
+                    // context.success();
                 }
             }
 
@@ -103,9 +104,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
             @Override
             public void onRangeStart(String utteranceId, int start, int end, int frame){
-                // System.out.println("RANGE VALUES:\n" );
-                // System.out.println("start: " + start);
-                // System.out.println("end: "  + end);
 
                  sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
 
@@ -138,6 +136,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         
             rangeStartCallback = callbackContext;
             System.out.println("RANGE_START_CALLBACK REGISTERED");
+        } else if (action.equals("registerStopCallback")){
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
+            pluginResult.setKeepCallback(true);
+            callbackContext.sendPluginResult(pluginResult);
+        
+            synthesisDoneCallback = callbackContext;
+            System.out.println("SYNTHESIS_DONE_CALLBACK REGISTERED");
         } else {
             return false;
         }
@@ -168,7 +173,16 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void stop(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {
-        tts.stop();
+         if(tts != null){
+            System.out.println("STOPPING UTTERANCE");
+            tts.stop();
+
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+            pluginResult.setKeepCallback(true);
+            synthesisDoneCallback.sendPluginResult(pluginResult);
+
+           
+        }
     }
 
     private void callInstallTtsActivity(JSONArray args, CallbackContext callbackContext)
@@ -365,7 +379,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 pluginResult.setKeepCallback(true);
                 rangeStartCallback.sendPluginResult(pluginResult);
                 
-                // rangeStartCallback.success(eventData);
             } else if(event == "onBeginSynthesis"){
                 synthesisCallback.success(eventData);
             }
@@ -376,11 +389,5 @@ public class TTS extends CordovaPlugin implements OnInitListener {
       
     }
 
-    private void stop() {
 
-        if(tts != null){
-            System.out.println("STOPPING UTTERANCE");
-            tts.stop();
-        }
-    }
 }

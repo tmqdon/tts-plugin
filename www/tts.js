@@ -66,3 +66,16 @@ exports.registerRangeStartCallback = () => {
         []
     );
 };
+
+exports.registerStopCallback = () => {
+    cordova.exec(
+        function () {
+            const stopEvent = new Event("onTtsStop");
+            document.dispatchEvent(stopEvent);
+        },
+        null,
+        "TTS",
+        "registerStopCallback",
+        []
+    );
+};
