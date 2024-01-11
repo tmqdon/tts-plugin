@@ -120,7 +120,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             getVoices(args, callbackContext);
         } else if (action.equals("openInstallTts")) {
             callInstallTtsActivity(args, callbackContext);
-        } else {
+        } else if (action.equals("registerSynthesisCallback")){
+            synthesisCallback = callbackContext;
+        }else {
             return false;
         }
         return true;
