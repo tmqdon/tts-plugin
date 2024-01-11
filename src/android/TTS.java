@@ -87,9 +87,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
                     try {
                         JSONObject eventData = new JSONObject();
-                    if(stopReason != null){
-                        eventData.put("stopReason", stopReason);
-                    }
+                        
+                        if(stopReason != null){
+                            eventData.put("stopReason", stopReason);
+                        }
+
                         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                         pluginResult.setKeepCallback(true);
                         synthesisDoneCallback.sendPluginResult(pluginResult);
@@ -187,6 +189,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
            if(!params.isNull("stopReason")){
                 stopReason = params.getString("stopReason");
+                System.out.println(stopReason);
            }
 
             if(tts != null){

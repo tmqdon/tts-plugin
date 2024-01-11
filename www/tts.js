@@ -78,6 +78,8 @@ exports.registerRangeStartCallback = () => {
 exports.registerStopCallback = () => {
     cordova.exec(
         function (data) {
+            console.log("data", data);
+
             const stopEvent = new CustomEvent("onTtsStop", { detail: data });
             document.dispatchEvent(stopEvent);
         },
