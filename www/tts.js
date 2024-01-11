@@ -61,8 +61,6 @@ exports.registerSynthesisCallback = () => {
 // };
 
 exports.registerRangeStartCallback = (printFunc) => {
-    printFunc();
-
     cordova.exec(
         function (data) {
             printFunc(data);
