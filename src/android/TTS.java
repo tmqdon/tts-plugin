@@ -54,10 +54,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     Context context = null;
     CordovaWebView webView = null;
     CallbackContext synthesisCallback = null;
+    CallbackContext rangeStartCallback = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
-        synthesisCallback = new CallbackContext("listener_callback", webView);
+
         context = cordova.getActivity().getApplicationContext();
 
         tts = new TextToSpeech(cordova.getActivity().getApplicationContext(), this);
@@ -75,7 +76,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 // System.out.println("audioFormat: "  + audioFormat);
                 // System.out.println("channelCount: " + channelCount);
 
-                sendEventToCordova("onBeginSynthesisEvent", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz, "audioFormat", audioFormat, "channelCount", channelCount);
+                sendEventToCordova("onBeginSynthesis", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz, "audioFormat", audioFormat, "channelCount", channelCount);
 
             }
 
@@ -94,13 +95,17 @@ public class TTS extends CordovaPlugin implements OnInitListener {
            
             }
 
+            public void onError(String utteranceId, int errorCode){
+                System.out.println("Error encountered in id: " + utteranceId + " errorCode: " + errorCode );
+            }
+
             @Override
             public void onRangeStart(String utteranceId, int start, int end, int frame){
                 // System.out.println("RANGE VALUES:\n" );
                 // System.out.println("start: " + start);
                 // System.out.println("end: "  + end);
 
-                 sendEventToCordova("onRangeStartEvent", "startIdx", start, "endIdx", end, "frame", frame);
+                 sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
 
             }
         });
@@ -110,8 +115,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
 
-        System.out.println("Action requested: " + action);
-        
         if (action.equals("speak")) {
             speak(args, callbackContext);
         } else if (action.equals("stop")) {
@@ -125,7 +128,10 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         } else if (action.equals("registerSynthesisCallback")){
             synthesisCallback = callbackContext;
             System.out.println("SYNTHESIS_CALLBACK REGISTERED");
-        }else {
+        } else if (action.equals("registerRangeStartCallback")){
+            rangeStartCallback = callbackContext;
+            System.out.println("RANGE_START_CALLBACK REGISTERED");
+        } else {
             return false;
         }
         return true;
@@ -333,25 +339,37 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void sendEventToCordova(String event, Object... data) {
 
-  
-        if (synthesisCallback != null) {
-            try {
-                JSONObject eventData = new JSONObject();
-                eventData.put("event", event);
+       
+        try {
+            JSONObject eventData = new JSONObject();
+            eventData.put("event", event);
 
-                // Add additional data to the eventData
-                for (int i = 0; i < data.length; i += 2) {
-                    if (i + 1 < data.length) {
-                        eventData.put(data[i].toString(), data[i + 1]);
-                    }
+            // Add additional data to the eventData
+            for (int i = 0; i < data.length; i += 2) {
+                if (i + 1 < data.length) {
+                    eventData.put(data[i].toString(), data[i + 1]);
                 }
-
-                System.out.println("sending eventData: " + eventData.toString());
-
-                synthesisCallback.success(eventData);
-            } catch (JSONException e) {
-                synthesisCallback.error("Failed to create JSON object");
             }
+
+            System.out.println("sending eventData: " + eventData.toString());
+
+            if(event == "onRangeStart"){
+                rangeStartCallback.success(eventData);
+            } else if(event == "onBeginSynthesis"){
+                synthesisCallback.success(eventData);
+            }
+
+        } catch (JSONException e) {
+            synthesisCallback.error("Failed to create JSON object");
+        }
+      
+    }
+
+    private void stop() {
+
+        if(tts != null){
+            System.out.println("STOPPING UTTERANCE");
+            tts.stop();
         }
     }
 }
