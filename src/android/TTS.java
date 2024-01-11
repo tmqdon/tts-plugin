@@ -109,6 +109,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
+
+        System.out.println("Action requested: " + action);
         
         if (action.equals("speak")) {
             speak(args, callbackContext);
@@ -122,6 +124,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             callInstallTtsActivity(args, callbackContext);
         } else if (action.equals("registerSynthesisCallback")){
             synthesisCallback = callbackContext;
+            System.out.println("SYNTHESIS_CALLBACK REGISTERED");
         }else {
             return false;
         }
