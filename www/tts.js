@@ -54,11 +54,10 @@ exports.registerSynthesisCallback = () => {
     });
 };
 
-exports.registerRangeStartCallback = (printFunc) => {
+exports.registerRangeStartCallback = () => {
     cordova.exec(
         function (data) {
-            // printFunc(data);
-            const rangeStartEvent = new CustomEvent("onRangeStartCallback", { data });
+            const rangeStartEvent = new CustomEvent("onRangeStartCallback", { detail: data });
             document.dispatchEvent(rangeStartEvent);
         },
         null,
