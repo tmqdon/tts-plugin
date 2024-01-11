@@ -26,7 +26,9 @@ exports.speak = function (text) {
 
 exports.stop = function (reason) {
     return new Promise(function (resolve, reject) {
-        let options = {};
+        const options = {};
+
+        console.log("reason", reason);
 
         if (reason) {
             options["stopReason"] = reason;
