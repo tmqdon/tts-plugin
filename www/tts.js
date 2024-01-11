@@ -25,12 +25,13 @@ exports.speak = function (text) {
 };
 
 exports.stop = function (reason) {
-    let options = {};
-
-    if (reason) {
-        options.stopReason = reason;
-    }
     return new Promise(function (resolve, reject) {
+        let options = {};
+
+        if (reason) {
+            options["stopReason"] = reason;
+        }
+
         cordova.exec(resolve, reject, "TTS", "stop", [options]);
     });
 };
