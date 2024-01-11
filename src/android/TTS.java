@@ -56,7 +56,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     CordovaWebView webView = null;
     CallbackContext synthesisCallback = null;
     CallbackContext rangeStartCallback = null;
-     CallbackContext synthesisDoneCallback = null;
+    CallbackContext synthesisDoneCallback = null;
+    String stopReason = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
@@ -83,11 +84,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             public void onDone(String callbackId) {
                 System.out.println("done " + callbackId);
                 if (!callbackId.equals("")) {
-                    // CallbackContext context = new CallbackContext(callbackId, webView);
-                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+
+                    JSONObject eventData = new JSONObject();
+                    eventData.put("stopReason", stopReason);
+
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                     pluginResult.setKeepCallback(true);
                     synthesisDoneCallback.sendPluginResult(pluginResult);
-                    // context.success();
                 }
             }
 
@@ -173,7 +176,14 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void stop(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {
-         if(tts != null){
+
+           JSONObject params = args.getJSONObject(0);
+
+           if(!params.isNull("stopReason")){
+                stopReason = params.getString("stopReason");
+           }
+
+            if(tts != null){
             System.out.println("STOPPING UTTERANCE");
             tts.stop();
 
@@ -339,6 +349,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         } else {
             tts.speak(text,cancel?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,ttsParams);
         }
+
+        stopReason = null;
     }
     private void getVoices(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {

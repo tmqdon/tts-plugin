@@ -24,9 +24,14 @@ exports.speak = function (text) {
     });
 };
 
-exports.stop = function () {
+exports.stop = function (reason) {
+    let options = {};
+
+    if (reason) {
+        options.stopReason = reason;
+    }
     return new Promise(function (resolve, reject) {
-        cordova.exec(resolve, reject, "TTS", "stop", []);
+        cordova.exec(resolve, reject, "TTS", "stop", [options]);
     });
 };
 
@@ -69,8 +74,8 @@ exports.registerRangeStartCallback = () => {
 
 exports.registerStopCallback = () => {
     cordova.exec(
-        function () {
-            const stopEvent = new Event("onTtsStop");
+        function (data) {
+            const stopEvent = new CustomEvent("onTtsStop", { detail: data });
             document.dispatchEvent(stopEvent);
         },
         null,
