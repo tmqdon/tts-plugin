@@ -4,6 +4,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebViewImpl;
 import org.apache.cordova.CordovaInterface;
 
 import org.json.JSONArray;
@@ -116,7 +117,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
 
-        webView.sendJavascriptEvent("hello");
+        CordovaWebViewImpl webviewImpl = new CordovaWebViewImpl(webView.getEngine());
+
+        webviewImpl.sendJavascriptEvent("hello");
 
         if (action.equals("speak")) {
             speak(args, callbackContext);
