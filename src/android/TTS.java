@@ -187,9 +187,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
            JSONObject params = args.getJSONObject(0);
 
-           if(!params.isNull("stopReason")){
+           if(params.isNull("stopReason")){
+              stopReason = "stop";
+              System.out.println(stopReason);
+           } else {
                 stopReason = params.getString("stopReason");
                 System.out.println(stopReason);
+                System.out.println(params.getString("stopReason"));
            }
 
             System.out.println(params.toString());
