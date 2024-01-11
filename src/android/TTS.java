@@ -86,7 +86,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 if (!callbackId.equals("")) {
 
                     JSONObject eventData = new JSONObject();
-                    eventData.put("stopReason", stopReason);
+                    if(stopReason != null){
+                        eventData.put("stopReason", stopReason);
+                    }
 
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                     pluginResult.setKeepCallback(true);
