@@ -84,7 +84,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             public void onDone(String callbackId) {
                 System.out.println("done" + callbackId);
                 if (!callbackId.equals("")) {
-                    // CallbackContext context = new CallbackContext(callbackId, webView);
+                    CallbackContext context = new CallbackContext(callbackId, webView);
                     context.success();
                 }
             }
@@ -105,7 +105,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 // System.out.println("RANGE VALUES:\n" );
                 // System.out.println("start: " + start);
                 // System.out.println("end: "  + end);
-
 
                  sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
 
@@ -345,7 +344,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void sendEventToCordova(String event, Object... data) {
 
-
        
         try {
             JSONObject eventData = new JSONObject();
@@ -361,12 +359,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             System.out.println("sending eventData: " + eventData.toString());
 
             if(event == "onRangeStart"){
-
-            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
-            pluginResult.setKeepCallback(true);
-            rangeStartCallback.sendPluginResult(pluginResult);
-            // rangeStartCallback.success(eventData);
-
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
+                pluginResult.setKeepCallback(true);
+                rangeStartCallback.sendPluginResult(pluginResult);
+                
+                // rangeStartCallback.success(eventData);
             } else if(event == "onBeginSynthesis"){
                 synthesisCallback.success(eventData);
             }
