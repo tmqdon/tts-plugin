@@ -60,7 +60,9 @@ exports.registerSynthesisCallback = () => {
 //     });
 // };
 
-exports.registerRangeStartCallback = () => {
+exports.registerRangeStartCallback = (context) => {
+    console.log("context", context);
+
     cordova.exec(
         function () {
             console.log("hello");
