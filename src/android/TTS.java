@@ -85,14 +85,18 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 System.out.println("done " + callbackId);
                 if (!callbackId.equals("")) {
 
-                    JSONObject eventData = new JSONObject();
+                    try {
+                        JSONObject eventData = new JSONObject();
                     if(stopReason != null){
                         eventData.put("stopReason", stopReason);
                     }
-
-                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
-                    pluginResult.setKeepCallback(true);
-                    synthesisDoneCallback.sendPluginResult(pluginResult);
+                        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
+                        pluginResult.setKeepCallback(true);
+                        synthesisDoneCallback.sendPluginResult(pluginResult);
+                    } catch (JSONException e) {
+ 
+                        synthesisDoneCallback.error("Failed to create JSON object");
+                    }
                 }
             }
 
