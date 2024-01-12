@@ -18,6 +18,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 
 import java.util.*;
+import java.lang.reflect.Field;
 
 import org.apache.cordova.PluginResult;
 import org.apache.cordova.PluginResult.Status;
@@ -73,10 +74,10 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             }
 
             @Override
-            public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount){
+            public void onBeginSynthesis(String utteranceId, int sampleRateInHz, int audioFormat, int channelCount) {
 
-
-                sendEventToCordova("onBeginSynthesis", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz, "audioFormat", audioFormat, "channelCount", channelCount);
+                sendEventToCordova("onBeginSynthesis", "utteranceId", utteranceId, "sampleRateInHz", sampleRateInHz,
+                        "audioFormat", audioFormat, "channelCount", channelCount);
 
             }
 
@@ -87,8 +88,8 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
                     try {
                         JSONObject eventData = new JSONObject();
-                        
-                        if(stopReason != null){
+
+                        if (stopReason != null) {
                             eventData.put("stopReason", stopReason);
                         }
 
@@ -96,27 +97,48 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                         pluginResult.setKeepCallback(true);
                         synthesisDoneCallback.sendPluginResult(pluginResult);
                     } catch (JSONException e) {
- 
+
                         synthesisDoneCallback.error("Failed to create JSON object");
                     }
                 }
             }
 
             @Override
-            public void onError (String utteranceId) {
+            public void onError(String utteranceId) {
 
-                 System.out.println("Error encountered in id: " + utteranceId );
-           
+                try {
+                    System.out.println("Error encountered in id: " + utteranceId);
+
+                    JSONObject reason = new JSONObject();
+                    reason.put("stopReason", "ERROR");
+
+                    stop(new JSONArray().put(reason), null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
 
-            public void onError(String utteranceId, int errorCode){
-                System.out.println("Error encountered in id: " + utteranceId + " errorCode: " + errorCode );
+            public void onError(String utteranceId, int errorCode) {
+                try {
+
+                    String errorType = getErrorConstantName(errorCode);
+                    System.out.println("Error encountered in id: " + utteranceId + " errorCode: " + errorType);
+
+                    JSONObject reason = new JSONObject();
+                    reason.put("stopReason", "ERROR");
+
+                    stop(new JSONArray().put(reason), null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
 
             @Override
-            public void onRangeStart(String utteranceId, int start, int end, int frame){
+            public void onRangeStart(String utteranceId, int start, int end, int frame) {
 
-                 sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
+                sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
 
             }
         });
@@ -125,7 +147,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext)
             throws JSONException {
-
 
         if (action.equals("speak")) {
             speak(args, callbackContext);
@@ -137,21 +158,21 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             getVoices(args, callbackContext);
         } else if (action.equals("openInstallTts")) {
             callInstallTtsActivity(args, callbackContext);
-        } else if (action.equals("registerSynthesisCallback")){
+        } else if (action.equals("registerSynthesisCallback")) {
             synthesisCallback = callbackContext;
             System.out.println("SYNTHESIS_CALLBACK REGISTERED");
-        } else if (action.equals("registerRangeStartCallback")){
+        } else if (action.equals("registerRangeStartCallback")) {
             PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
             pluginResult.setKeepCallback(true);
             callbackContext.sendPluginResult(pluginResult);
-        
+
             rangeStartCallback = callbackContext;
             System.out.println("RANGE_START_CALLBACK REGISTERED");
-        } else if (action.equals("registerStopCallback")){
+        } else if (action.equals("registerStopCallback")) {
             PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
             pluginResult.setKeepCallback(true);
             callbackContext.sendPluginResult(pluginResult);
-        
+
             synthesisDoneCallback = callbackContext;
             System.out.println("SYNTHESIS_DONE_CALLBACK REGISTERED");
         } else {
@@ -172,11 +193,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             ttsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "");
             tts.setLanguage(new Locale("en", "US"));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                tts.speak("",TextToSpeech.QUEUE_FLUSH,null,null);
+                tts.speak("", TextToSpeech.QUEUE_FLUSH, null, null);
             } else {
                 tts.speak("", TextToSpeech.QUEUE_FLUSH, null);
             }
-//            tts.speak("", TextToSpeech.QUEUE_FLUSH, ttsParams);
+            // tts.speak("", TextToSpeech.QUEUE_FLUSH, ttsParams);
             System.out.println("TTS: SUCCESS");
             ttsInitialized = true;
         }
@@ -185,39 +206,38 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     private void stop(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {
 
-           JSONObject params = args.getJSONObject(0);
+        if (tts != null) {
+            if (args.length() > 0) {
+                JSONObject params = args.getJSONObject(0);
 
-           if(params.isNull("stopReason")){
-              stopReason = "stop";
-              System.out.println(stopReason);
-           } else {
-                stopReason = params.getString("stopReason");
-                System.out.println(stopReason);
-                System.out.println(params.getString("stopReason"));
-           }
+                stopReason = params.isNull("stopReason") ? "stop" : params.getString("stopReason");
 
-            System.out.println(params.toString());
+            } else {
+                stopReason = "stop";
+            }
 
-            if(tts != null){
             System.out.println("STOPPING UTTERANCE");
+            System.out.println("STOP_REASON: " + stopReason);
             tts.stop();
 
             try {
                 JSONObject eventData = new JSONObject();
-                        
-                if(stopReason != null){
+
+                if (stopReason != null) {
                     eventData.put("stopReason", stopReason);
+                } else {
+                    eventData.put("stopReason", "UNKNOWN");
                 }
 
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                 pluginResult.setKeepCallback(true);
                 synthesisDoneCallback.sendPluginResult(pluginResult);
             } catch (JSONException e) {
- 
+
+                e.printStackTrace();
                 synthesisDoneCallback.error("Failed to create JSON object");
             }
 
-           
         }
     }
 
@@ -227,9 +247,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         PackageManager pm = context.getPackageManager();
         Intent installIntent = new Intent();
         installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-        ResolveInfo resolveInfo = pm.resolveActivity( installIntent, PackageManager.MATCH_DEFAULT_ONLY );
+        ResolveInfo resolveInfo = pm.resolveActivity(installIntent, PackageManager.MATCH_DEFAULT_ONLY);
 
-        if( resolveInfo == null ) {
+        if (resolveInfo == null) {
             // Not able to find the activity which should be started for this intent
         } else {
             installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -237,12 +257,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         }
     }
 
-
     private void checkLanguage(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {
         Set<Locale> supportedLanguages = tts.getAvailableLanguages();
         String languages = "";
-        if(supportedLanguages!= null) {
+        if (supportedLanguages != null) {
             for (Locale lang : supportedLanguages) {
                 languages = languages + "," + lang;
             }
@@ -283,7 +302,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             Log.v("TTS", "No voice identifier");
         } else {
             identifier = params.getString("identifier");
-            Log.v("TTS", "got identifier: "+identifier);
+            Log.v("TTS", "got identifier: " + identifier);
         }
 
         if (params.isNull("locale")) {
@@ -295,22 +314,23 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         if (!params.isNull("cancel")) {
             cancel = params.getBoolean("cancel");
         }
-        Log.v("TTS", "cancel is set to "+cancel+ "("+(cancel?"TextToSpeech.QUEUE_FLUSH":"TextToSpeech.QUEUE_ADD")+")");
+        Log.v("TTS", "cancel is set to " + cancel + "("
+                + (cancel ? "TextToSpeech.QUEUE_FLUSH" : "TextToSpeech.QUEUE_ADD") + ")");
 
         if (params.isNull("rate")) {
             rate = 1.0;
-            Log.v("TTS", "No rate provided, so rate is set to "+rate);
+            Log.v("TTS", "No rate provided, so rate is set to " + rate);
         } else {
             rate = params.getDouble("rate");
-            Log.v("TTS", "rate is set to "+rate);
+            Log.v("TTS", "rate is set to " + rate);
         }
 
         if (params.isNull("pitch")) {
             pitch = 1.0;
-            Log.v("TTS", "No pitch provided, so pitch set to "+pitch);
+            Log.v("TTS", "No pitch provided, so pitch set to " + pitch);
         } else {
             pitch = params.getDouble("pitch");
-            Log.v("TTS", "Pitch set to "+pitch);
+            Log.v("TTS", "Pitch set to " + pitch);
         }
 
         if (tts == null) {
@@ -339,7 +359,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 }
             }
             if (voice == null) {
-                Log.v("TTS", "No Voice for identifier: "+identifier+", we'll try the locale");
+                Log.v("TTS", "No Voice for identifier: " + identifier + ", we'll try the locale");
             }
         }
         if (voice == null) {
@@ -357,7 +377,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         }
 
         if (voice != null) {
-            Log.v("TTS", "We've got a voice: "+voice.getName());
+            Log.v("TTS", "We've got a voice: " + voice.getName());
             tts.setVoice(voice);
         } else {
             Log.v("TTS", "No voice found..");
@@ -368,16 +388,18 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         } else {
             tts.setSpeechRate((float) rate);
         }
-        tts.setPitch((float)pitch);
+        tts.setPitch((float) pitch);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts.speak(text,cancel?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,null,callbackContext.getCallbackId());
+            tts.speak(text, cancel ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, null,
+                    callbackContext.getCallbackId());
         } else {
-            tts.speak(text,cancel?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,ttsParams);
+            tts.speak(text, cancel ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, ttsParams);
         }
 
         stopReason = null;
     }
+
     private void getVoices(JSONArray args, CallbackContext callbackContext)
             throws JSONException, NullPointerException {
 
@@ -385,7 +407,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         JSONArray languages = new JSONArray();
         for (Voice tmpVoice : voices) {
             JSONObject lang = new JSONObject();
-            Log.v("TTS", "Voice: "+tmpVoice.getName());
+            Log.v("TTS", "Voice: " + tmpVoice.getName());
             lang.put("name", tmpVoice.getName());
             lang.put("identifier", tmpVoice.getName());
             lang.put("language", tmpVoice.getLocale());
@@ -398,7 +420,6 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
     private void sendEventToCordova(String event, Object... data) {
 
-       
         try {
             JSONObject eventData = new JSONObject();
             eventData.put("event", event);
@@ -412,20 +433,40 @@ public class TTS extends CordovaPlugin implements OnInitListener {
 
             System.out.println("sending eventData: " + eventData.toString());
 
-            if(event == "onRangeStart"){
+            if (event == "onRangeStart") {
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                 pluginResult.setKeepCallback(true);
                 rangeStartCallback.sendPluginResult(pluginResult);
-                
-            } else if(event == "onBeginSynthesis"){
+
+            } else if (event == "onBeginSynthesis") {
                 synthesisCallback.success(eventData);
             }
 
         } catch (JSONException e) {
             synthesisCallback.error("Failed to create JSON object");
         }
-      
+
     }
 
+    private String getErrorConstantName(int errorCode) {
+        try {
+            Class<?> ttsClass = TextToSpeech.class;
+
+            // Get all declared fields in the TextToSpeech class
+            Field[] fields = ttsClass.getDeclaredFields();
+
+            // Iterate through the fields to find the one with the specified value
+            for (Field field : fields) {
+                if (field.getType() == int.class && field.getInt(null) == errorCode) {
+                    return field.getName();
+                }
+            }
+
+        } catch (IllegalAccessException | SecurityException e) {
+            e.printStackTrace();
+        }
+
+        return "UNKNOWN_ERROR_CODE";
+    }
 
 }
