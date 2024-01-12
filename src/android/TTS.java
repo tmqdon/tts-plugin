@@ -59,6 +59,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     CallbackContext rangeStartCallback = null;
     CallbackContext synthesisDoneCallback = null;
     String stopReason = null;
+    long startTime;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
@@ -70,6 +71,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             @Override
             public void onStart(String s) {
 
+                startTime = System.currentTimeMillis();
                 System.out.println("starting speech for Id: " + s);
             }
 
@@ -144,7 +146,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             @Override
             public void onRangeStart(String utteranceId, int start, int end, int frame) {
 
-                sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "frame", frame);
+                long elapsedTime = startTime != 0 ? System.currentTimeMillis() - startTime : 0L;
+                sendEventToCordova("onRangeStart", "startIdx", start, "endIdx", end, "elapsedTime", elapsedTime,
+                        "charLength", end - start);
 
             }
         });
@@ -213,14 +217,10 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             throws JSONException, NullPointerException {
 
         if (tts != null) {
-            if (args.length() > 0) {
-                JSONObject params = args.getJSONObject(0);
 
-                stopReason = params.isNull("stopReason") ? "stop" : params.getString("stopReason");
+            JSONObject params = args.getJSONObject(0);
 
-            } else {
-                stopReason = "stop";
-            }
+            stopReason = params.isNull("stopReason") ? "stop" : params.getString("stopReason");
 
             System.out.println("STOPPING UTTERANCE");
             System.out.println("STOP_REASON: " + stopReason);
