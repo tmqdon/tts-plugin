@@ -28,8 +28,6 @@ exports.stop = function (reason) {
     return new Promise(function (resolve, reject) {
         const options = {};
 
-        console.log("reason", reason);
-
         if (reason) {
             options["stopReason"] = reason;
         }
@@ -78,8 +76,6 @@ exports.registerRangeStartCallback = () => {
 exports.registerStopCallback = () => {
     cordova.exec(
         function (data) {
-            console.log("data", data);
-
             const stopEvent = new CustomEvent("onTtsStop", { detail: data });
             document.dispatchEvent(stopEvent);
         },
