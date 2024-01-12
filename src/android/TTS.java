@@ -89,9 +89,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                     try {
                         JSONObject eventData = new JSONObject();
 
-                        if (stopReason != null) {
-                            eventData.put("stopReason", stopReason);
-                        }
+                        eventData.put("stopReason", "done");
 
                         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
                         pluginResult.setKeepCallback(true);
@@ -109,10 +107,14 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 try {
                     System.out.println("Error encountered in id: " + utteranceId);
 
-                    JSONObject reason = new JSONObject();
-                    reason.put("stopReason", "ERROR");
+                    JSONObject eventData = new JSONObject();
+                    eventData.put("stopReason", "ERROR");
+                    eventData.put("errorType", "UNKNOWN");
 
-                    stop(new JSONArray().put(reason), null);
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
+                    pluginResult.setKeepCallback(true);
+                    synthesisDoneCallback.sendPluginResult(pluginResult);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -125,10 +127,14 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                     String errorType = getErrorConstantName(errorCode);
                     System.out.println("Error encountered in id: " + utteranceId + " errorCode: " + errorType);
 
-                    JSONObject reason = new JSONObject();
-                    reason.put("stopReason", "ERROR");
+                    JSONObject eventData = new JSONObject();
+                    eventData.put("stopReason", "ERROR");
+                    eventData.put("errorType", errorType);
 
-                    stop(new JSONArray().put(reason), null);
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, eventData);
+                    pluginResult.setKeepCallback(true);
+                    synthesisDoneCallback.sendPluginResult(pluginResult);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
